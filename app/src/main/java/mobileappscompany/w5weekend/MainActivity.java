@@ -7,7 +7,15 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,145 +33,90 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
-    // CONNECTION_TIMEOUT and READ_TIMEOUT are in milliseconds
-    public static final int CONNECTION_TIMEOUT = 10000;
-    public static final int READ_TIMEOUT = 15000;
+
     private static final String TAG = "MainActivity: ";
     private RecyclerView recyclerView;
-    private AdapterBook mAdapter;
+    //private RecyclerView.Adapter adapterBook;
+    private AdapterBook adapterBook;
+
+    private List<Book> bookList;
+    public static final String URL_DATA = "http://de-coding-test.s3.amazonaws.com/books.json";
+
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new AsyncFetch().execute();
+
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        bookList = new ArrayList<>();
+
+        loadRecyclerViewData();
+
+
     }
 
-    private class AsyncFetch extends AsyncTask<String, String, String> {
-        ProgressDialog pdLoading = new ProgressDialog(MainActivity.this);
-        HttpURLConnection conn;
-        URL url = null;
+    private void loadRecyclerViewData() {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading data...");
+        progressDialog.show();
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
 
-            //this method will be running on UI thread
-            pdLoading.setMessage("\tLoading...");
-            pdLoading.setCancelable(false);
-            pdLoading.show();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                URL_DATA,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
 
-        }
+                        progressDialog.dismiss();
 
-        @Override
-        protected String doInBackground(String... params) {
-            try {
+                        try {
+                            //JSONObject jsonObject = new JSONObject(response);
 
-                // Enter URL address where your json file resides
-                url = new URL("http://de-coding-test.s3.amazonaws.com/books.json");
+                            //JSONArray array = jsonObject.getJSONArray("books");
 
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return e.toString();
-            }
-            try {
+                            JSONArray array = new JSONArray(response);
 
-                // Setup HttpURLConnection class to send and receive data from php and mysql
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(READ_TIMEOUT);
-                conn.setConnectTimeout(CONNECTION_TIMEOUT);
-                conn.setRequestMethod("GET");
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject object = array.getJSONObject(i);
 
-                // setDoOutput to true as we recieve data from json file
-                conn.setDoOutput(true);
+                                Book book = new Book(
+                                        object.getString("title"),
+                                        "author",
+                                        "imageURL"
+                                );
+                                bookList.add(book);
+                            }
 
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-                return e1.toString();
-            }
+                            //adapterBook = new AdapterBook(getApplicationContext(), bookList);
+                            adapterBook = new AdapterBook(getApplicationContext(), bookList);
 
-            try {
+                            recyclerView.setAdapter(adapterBook);
 
-                int response_code = conn.getResponseCode();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
-                // Check if successful connection made
-                if (response_code == HttpURLConnection.HTTP_OK) {
-
-                    // Read data sent from server
-                    InputStream input = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line);
                     }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
 
+                        progressDialog.dismiss();
+                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
 
+                    }
+                });
 
-                    // Pass data to onPostExecute method
-                    return (result.toString());
-
-                } else {
-
-                    return ("unsuccessful");
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                return e.toString();
-            } finally {
-                conn.disconnect();
-            }
-
-
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-
-            pdLoading.dismiss();
-            List<Book> data =new ArrayList<>();
-
-            pdLoading.dismiss();
-            try {
-
-                Log.d(TAG, result.toString());
-
-
-                JSONArray jsonArray = new JSONArray(result);
-
-
-
-                //JSONObject jsonObject = new JSONObject(result);
-                //JSONArray jsonArray = jsonObject.getJSONArray("");
-
-
-                Log.d(TAG, "String cannot be converted to JSONArray");
-
-                // Extract data from json and store into ArrayList as class objects
-                for(int i=0;i<jsonArray.length();i++){
-                    JSONObject json_data = jsonArray.getJSONObject(i);
-                    Book book = new Book();
-                    book.image= json_data.getString("image");
-                    book.title= json_data.getString("title");
-                    book.author = json_data.getString("author");
-                    data.add(book);
-                }
-
-                // Setup and Handover data to recyclerview
-                recyclerView = (RecyclerView)findViewById(R.id.recyclerView);
-                mAdapter = new AdapterBook(MainActivity.this, data);
-                recyclerView.setAdapter(mAdapter);
-                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-
-            } catch (JSONException e) {
-                Log.d(TAG, e.toString());
-                Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
-            }
-        }
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
 
     }
+
 }

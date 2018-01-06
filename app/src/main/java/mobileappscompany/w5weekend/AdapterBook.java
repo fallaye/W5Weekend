@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,8 +22,7 @@ public class AdapterBook extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private LayoutInflater inflater;
     List<Book> data= Collections.emptyList();
-    Book current;
-    int currentPos=0;
+
 
     public AdapterBook(Context context, List<Book> data){
         this.context=context;
@@ -46,11 +44,12 @@ public class AdapterBook extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         Book current=data.get(position);
         myHolder.tvTitle.setText("Title: " + current.title);
         myHolder.tvAuthor.setText("Author: " + current.author);
+        //myHolder.ivBook.setText("Image: " + current.imageURL);
         // load image into imageview using glide
-        Glide.with(context).load("http://192.168.1.7/test/images/" + current.image)
+        /*Glide.with(context).load("http://192.168.1.7/test/images/" + current.image)
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_launcher_background)
-                .into(myHolder.ivBook);
+                .into(myHolder.ivBook);*/
 
     }
 

@@ -6,7 +6,7 @@ package mobileappscompany.w5weekend;
 
 public class Book {
 
-    String image, title, author;
+    String title, author, imageURL;
 
     public Book() {
     }
@@ -14,15 +14,15 @@ public class Book {
     @Override
     public String toString() {
         return "Book{" +
-                "image='" + image + '\'' +
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
+                "image='" + imageURL + '\'' +
                 '}';
     }
 
-    public Book(String image, String title, String author) {
-        this.image = image;
+    public Book(String title, String author, String image) {
         this.title = title;
         this.author = author;
+        this.imageURL = image;
     }
 }
