@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                             String title, author, imageURL;
                             Book book;
 
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 10; i++) {
 
                                 JSONObject object = array.getJSONObject(i);
 
