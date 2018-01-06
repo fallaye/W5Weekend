@@ -11,6 +11,24 @@ public class Book {
     public Book() {
     }
 
+    public Book(String title, String author, String image) {
+        this.title = title;
+        this.author = author;
+        this.imageURL = image;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getImageURL() {
+        return imageURL;
+    }
+
     @Override
     public String toString() {
         return "Book{" +
@@ -20,9 +38,4 @@ public class Book {
                 '}';
     }
 
-    public Book(String title, String author, String image) {
-        this.title = title;
-        this.author = author;
-        this.imageURL = image;
-    }
 }

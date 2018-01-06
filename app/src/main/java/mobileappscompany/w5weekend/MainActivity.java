@@ -36,66 +36,81 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity: ";
     private RecyclerView recyclerView;
-    //private RecyclerView.Adapter adapterBook;
     private AdapterBook adapterBook;
-
     private List<Book> bookList;
     public static final String URL_DATA = "http://de-coding-test.s3.amazonaws.com/books.json";
 
-
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setHasFixedSize(true);
+        //recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         bookList = new ArrayList<>();
-
         loadRecyclerViewData();
-
-
     }
 
     private void loadRecyclerViewData() {
+
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading data...");
         progressDialog.show();
 
-
+        //From Volley
         StringRequest stringRequest = new StringRequest(Request.Method.GET,
                 URL_DATA,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-
                         progressDialog.dismiss();
-
                         try {
                             //JSONObject jsonObject = new JSONObject(response);
-
                             //JSONArray array = jsonObject.getJSONArray("books");
 
                             JSONArray array = new JSONArray(response);
 
-                            for (int i = 0; i < array.length(); i++) {
+                            String title, author, imageURL;
+                            Book book;
+
+                            for (int i = 0; i < 3; i++) {
+
                                 JSONObject object = array.getJSONObject(i);
 
-                                Book book = new Book(
-                                        object.getString("title"),
-                                        "author",
-                                        "imageURL"
-                                );
+                                Log.d(TAG, "Title: " + object.getString("title"));
+                                Log.d(TAG, "imageURL: " + object.getString("imageURL"));
+
+                                title = object.getString("title");
+                                author = "";
+                                imageURL = object.getString("imageURL");
+
+                                if(author.isEmpty() && imageURL.isEmpty()){
+                                    book = new Book(
+                                            object.getString("title"),
+                                            "",
+                                            "");
+                                }else if(author.isEmpty()){
+                                    book = new Book(
+                                            object.getString("title"),
+                                            "",
+                                            imageURL);
+                                } else if (imageURL.isEmpty()) {
+                                    book = new Book(
+                                            object.getString("title"),
+                                            object.getString("author"),
+                                            ""
+                                    );
+                                }else
+                                    book = new Book(
+                                            object.getString("title"),
+                                            object.getString("author"),
+                                            object.getString("imageURL")
+
+                                    );
                                 bookList.add(book);
                             }
-
-                            //adapterBook = new AdapterBook(getApplicationContext(), bookList);
                             adapterBook = new AdapterBook(getApplicationContext(), bookList);
-
                             recyclerView.setAdapter(adapterBook);
 
                         } catch (JSONException e) {
@@ -116,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);
-
     }
 
 }

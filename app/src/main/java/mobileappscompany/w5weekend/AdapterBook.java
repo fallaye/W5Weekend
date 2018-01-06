@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
+import com.squareup.picasso.Picasso;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -17,39 +19,39 @@ import java.util.List;
  * Created by fallaye on 1/5/18.
  */
 
-public class AdapterBook extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class AdapterBook extends RecyclerView.Adapter<AdapterBook.MyViewHolder> {
 
     private Context context;
-    private LayoutInflater inflater;
-    List<Book> data= Collections.emptyList();
-
+    List<Book> data;
 
     public AdapterBook(Context context, List<Book> data){
         this.context=context;
-        inflater= LayoutInflater.from(context);
         this.data=data;
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view=inflater.inflate(R.layout.container_book, parent,false);
-        MyHolder holder=new MyHolder(view);
-        return holder;
+    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view= LayoutInflater.from(parent.getContext())
+        .inflate(R.layout.container_book, parent,false);
+        return new MyViewHolder(view);
+
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        MyHolder myHolder= (MyHolder) holder;
-        Book current=data.get(position);
-        myHolder.tvTitle.setText("Title: " + current.title);
-        myHolder.tvAuthor.setText("Author: " + current.author);
-        //myHolder.ivBook.setText("Image: " + current.imageURL);
+        Book currentBook =data.get(position);
+        holder.tvTitle.setText("Title: " + currentBook.title);
+        holder.tvAuthor.setText("Author: " + currentBook.author);
+        //holder.ivBook.setText("Image: " + current.imageURL);
         // load image into imageview using glide
         /*Glide.with(context).load("http://192.168.1.7/test/images/" + current.image)
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_launcher_background)
                 .into(myHolder.ivBook);*/
+        //using Picasso
+        Picasso.with(context).load(currentBook.getImageURL())
+                .into(holder.ivBook);
 
     }
 
@@ -58,17 +60,17 @@ public class AdapterBook extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return data.size();
     }
 
-    class MyHolder extends RecyclerView.ViewHolder{
+    class MyViewHolder extends RecyclerView.ViewHolder{
 
-        ImageView ivBook;
         TextView tvTitle;
         TextView tvAuthor;
+        ImageView ivBook;
 
-        public MyHolder(View itemView) {
+        public MyViewHolder(View itemView) {
             super(itemView);
-            ivBook= (ImageView) itemView.findViewById(R.id.ivBook);
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
             tvAuthor = (TextView) itemView.findViewById(R.id.tvAuthor);
+            ivBook= (ImageView) itemView.findViewById(R.id.ivBook);
         }
 
     }
